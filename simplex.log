@@ -1,0 +1,23 @@
+
+    Provides Bioinformatics software.
+    For more information please use:
+
+        $ module help Bioinformatics
+
+
+use model sup
+use testdata/basecall as output directory
+output file: testdata/basecall/testdata.bam
+run in simplex mode
+[2024-04-13 05:42:20.228] [warning] Unknown certs location for current distribution. If you hit download issues, use the envvar `SSL_CERT_FILE` to specify the location manually.
+[2024-04-13 05:42:20.230] [info]  - downloading dna_r10.4.1_e8.2_400bps_sup@v4.3.0 with httplib
+[2024-04-13 05:43:40.373] [error] Failed to download dna_r10.4.1_e8.2_400bps_sup@v4.3.0: Connection timed out
+[2024-04-13 05:43:40.374] [info]  - downloading dna_r10.4.1_e8.2_400bps_sup@v4.3.0 with curl
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0 92  105M   92 98.1M    0     0  88.4M      0  0:00:01  0:00:01 --:--:-- 88.3M100  105M  100  105M    0     0  89.7M      0  0:00:01  0:00:01 --:--:-- 89.7M
+[2024-04-13 05:43:43.379] [info] > Creating basecall pipeline
+[2024-04-13 05:43:47.860] [info]  - set batch size for cuda:0 to 576
+[2024-04-13 05:44:02.000] [info] > Simplex reads basecalled: 1000
+[2024-04-13 05:44:02.002] [info] > Basecalled @ Samples/s: 3.348471e+06
+[2024-04-13 05:44:02.068] [info] > Finished
