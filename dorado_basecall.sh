@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 #SBATCH --job-name=dorado
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --account=tyjames1
 #SBATCH --partition=gpu
 #SBATCH --gpus=1
