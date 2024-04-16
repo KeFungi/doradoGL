@@ -21,5 +21,5 @@ pod5 convert fast5 ./fast5/*.fast5 --output pod5 --one-to-one ./fast5/
 cd ../
 
 # minimum dorado test run
-sbatch -o simplex.log dorado_basecall.sh testdata #simplex
-sbatch -o duplex.log dorado_basecall.sh -d -n testdata_duplex testdata #duplex
+sbatch -o simplex.log dorado_basecall.sh testdata #run in simplex mode
+sbatch -o duplex.log dorado_basecall.sh -d -n testdata_duplex testdata #run in duplex mode

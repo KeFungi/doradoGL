@@ -10,8 +10,6 @@
 # Modify and un-comment these SBATCH parameters for recieving email notification
 ##SBATCH --mail-user=[id]@umich.edu
 ##SBATCH --mail-type=BEGIN,END,FAIL
-##SBATCH --output=[output_directory]/%x-%j.log
-##SBATCH --error=[output_directory]/%x-%j-E.log
 
 DEFAULT_MODEL='sup'
 
@@ -49,15 +47,18 @@ while getopts "m:o:n:dpfh" option; do
       h) # display Help
          Help
          exit 1;;
-      m) # Enter a name
+      m) # model name
          MODEL=$OPTARG;;
-      o) # Enter a name
+      o) # output dir name
          OUT_DIR=$OPTARG;;
-      n) # Enter a name
+      n) # output bam name
          BAMNAME=${OPTARG%.bam};;
-      d) duplex_mode=true;;
-      p) predownload_only=true;;
-      f) overwrite=true;;
+      d) # duplex mode
+         duplex_mode=true;;
+      p) # download only
+         predownload_only=true;;
+      f) # force overwrite output
+         overwrite=true;;
      \?) # Invalid option
          echo "Error: Invalid option"
          exit 1;;
@@ -78,7 +79,7 @@ NANOPORE_DIR=$1
 ## set dorado model
 if [ -z ${MODEL+x} ]; then 
     MODEL=${DEFAULT_MODEL}; fi
-echo "use model ${MODEL}"
+echo "use model '${MODEL}'"
 
 # pre-download dorado model if not exist
 if [ ${predownload_only} = true ]; then
@@ -91,6 +92,13 @@ if [ ${predownload_only} = true ]; then
     exit 0
 fi
 
+## read input dir
+POD5_DIR=${NANOPORE_DIR}/pod5/
+if [ ! -d ${POD5_DIR} ]; then
+    echo "${POD5_DIR} does not exit. Make sure pod5/ folder exists in RunDirectory"
+    exit 1; fi
+echo "read reads from ${POD5_DIR}"
+
 ## set output dir
 if [ -z ${OUT_DIR+x} ]; then OUT_DIR=${NANOPORE_DIR}/basecall; fi
 echo "use ${OUT_DIR} as output directory"
@@ -99,7 +107,7 @@ echo "use ${OUT_DIR} as output directory"
 if [ ! -d $OUT_DIR ]; then mkdir $OUT_DIR; fi
 
 ## set output .bam file name
-if [ -z ${BAMNAME+x} ]; then BAMNAME=${NANOPORE_DIR%/}; fi
+if [ -z ${BAMNAME+x} ]; then BAMNAME=$(basename ${NANOPORE_DIR}); fi
 BAMPATH=${OUT_DIR}/${BAMNAME}.bam
 
 if [ -f ${BAMPATH} ]; then
@@ -108,14 +116,11 @@ if [ -f ${BAMPATH} ]; then
     exit 1; fi; fi
 echo "output file: $BAMPATH"
 
-## report run mode
-if [ ${duplex_mode} = false ]; then
-    echo "run in simplex mode"; else
-    echo "run in duplex mode"; fi
-
 # run dorado
 if [ ${duplex_mode} = false ]; then
-    dorado basecaller ${MODEL} ${NANOPORE_DIR}/pod5/ > ${BAMPATH}; else
-    dorado duplex ${MODEL} ${NANOPORE_DIR}/pod5/ > ${BAMPATH}; fi
+    echo "run in simplex mode"
+    dorado basecaller ${MODEL} ${POD5_DIR} > ${BAMPATH}; else
+    echo "run in duplex mode"
+    dorado duplex ${MODEL} ${POD5_DIR} > ${BAMPATH}; fi
 
 exit 0
