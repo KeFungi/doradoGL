@@ -2,14 +2,9 @@
 
 #SBATCH --job-name=dorado
 #SBATCH --time=24:00:00
-#SBATCH --account=tyjames1
 #SBATCH --partition=gpu
 #SBATCH --gpus=1
 #SBATCH --mem-per-gpu=8g
-
-# Modify and un-comment these SBATCH parameters for recieving email notification
-##SBATCH --mail-user=[id]@umich.edu
-##SBATCH --mail-type=BEGIN,END,FAIL
 
 DEFAULT_MODEL='sup'
 
@@ -23,11 +18,11 @@ Help()
    echo "Syntax: dorado_basecall.sh [-m model] [-o OutDirectory] [-n BamFileName] [-d|-p|-f|-h] RunDirectory"
    echo
    echo "options:"
-   echo "RunDirectory     the nanopore run directory containing pod5 folder"
+   echo "RunDirectory     the nanopore run directory containing pod5 or fast5 folder. Note automatic model selection is not available for fast5 files"
    echo "-m               basecall model to pass to dorado. {fast,hac,sup}[@v{version}] for automatic model selection, or path to existing model directory"
    echo "                 Default: '$DEFAULT_MODEL'"
-   echo "-o               optional output directory. Default: RunDirectory/basecall"
-   echo "-n               optional file name for output .bam file. Default: the name of RunDirectory"
+   echo "-o               optional output directory. Default: RunDirectory/basecall/"
+   echo "-n               optional file name for output .bam file. Default: basecall.bam"
    echo "-d               duplex mode"
    echo "-p               pre-download model without actually running dorado. need to specify full model name in -m"
    echo "-f               force overwrite output"
@@ -94,10 +89,18 @@ fi
 
 ## read input dir
 POD5_DIR=${NANOPORE_DIR}/pod5/
-if [ ! -d ${POD5_DIR} ]; then
-    echo "${POD5_DIR} does not exit. Make sure pod5/ folder exists in RunDirectory"
-    exit 1; fi
-echo "read reads from ${POD5_DIR}"
+FAST5_DIR=${NANOPORE_DIR}/fast5/
+
+if [ -d ${POD5_DIR} ]; then
+    INPUT_DIR=${POD5_DIR}
+    echo "reading reads from ${INPUT_DIR}"; else
+    echo "${POD5_DIR} does not exit. try to use ${FAST5_DIR}"
+    if [ -d ${FAST5_DIR} ]; then
+        INPUT_DIR=${FAST5_DIR}
+        echo "reading reads from ${INPUT_DIR}"; else
+	echo "Make sure pod5/ or fast5/ folder exists in RunDirectory"
+	exit 1; fi
+    fi
 
 ## set output dir
 if [ -z ${OUT_DIR+x} ]; then OUT_DIR=${NANOPORE_DIR}/basecall; fi
@@ -107,7 +110,7 @@ echo "use ${OUT_DIR} as output directory"
 if [ ! -d $OUT_DIR ]; then mkdir $OUT_DIR; fi
 
 ## set output .bam file name
-if [ -z ${BAMNAME+x} ]; then BAMNAME=$(basename ${NANOPORE_DIR}); fi
+if [ -z ${BAMNAME+x} ]; then BAMNAME='basecall'; fi
 BAMPATH=${OUT_DIR}/${BAMNAME}.bam
 
 if [ -f ${BAMPATH} ]; then
@@ -119,8 +122,9 @@ echo "output file: $BAMPATH"
 # run dorado
 if [ ${duplex_mode} = false ]; then
     echo "run in simplex mode"
-    dorado basecaller ${MODEL} ${POD5_DIR} > ${BAMPATH}; else
+    dorado basecaller ${MODEL} ${INPUT_DIR} > ${BAMPATH}; else
     echo "run in duplex mode"
-    dorado duplex ${MODEL} ${POD5_DIR} > ${BAMPATH}; fi
+    dorado duplex ${MODEL} ${INPUT_DIR} > ${BAMPATH}; fi
 
 exit 0
+
